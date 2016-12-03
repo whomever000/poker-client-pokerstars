@@ -47,13 +47,14 @@ func Pot(img image.Image) (poker.Amount, error) {
 	pot := m.Match("pot", img)
 
 	// The string includes 'Pot:', so remove this before parsing.
-	pot = strings.Replace(pot, "Pot:", "", -1)
+	pot = strings.ToLower(pot)
+	pot = strings.Replace(pot, "pot:", "", -1)
 
 	return poker.ParseAmount(pot)
 }
 
 // Stack returns a player's stack.
-func Stack(img image.Image, position poker.PlayerPosition) (poker.Amount, error) {
+func PlayerStack(img image.Image, position poker.PlayerPosition) (poker.Amount, error) {
 
 	if position < 1 {
 		return 0, fmt.Errorf("Invalid player: %v", int(position))
@@ -78,22 +79,6 @@ func PlayerName(img image.Image, position poker.PlayerPosition) (string, error) 
 	return m.Match(fmt.Sprintf("plName%v", int(position)-1), img), nil
 }
 
-func PocketCards(img image.Image) ([]card.Card, error) {
-	val0 := m.Match("pocketValue0", img)
-	col0 := m.Match("pocketColor0", img)
-
-	val1 := m.Match("pocketValue1", img)
-	col1 := m.Match("pocketColor1", img)
-
-	c1, _ := card.ParseCard(fmt.Sprintf("%v%v", val0[2:], col0[:1]))
-	c2, _ := card.ParseCard(fmt.Sprintf("%v%v", val1[3:], col1[:1]))
-
-	fmt.Print(c1)
-	fmt.Print(c2)
-
-	return nil, nil
-}
-
 func ActivePlayers(img image.Image) (ret []int) {
 	for i := 0; i < 6; i++ {
 		active := m.Match("plActive"+strconv.Itoa(i), img)
@@ -112,5 +97,71 @@ func ButtonPosition(img image.Image) poker.PlayerPosition {
 		}
 	}
 	log.Printf("error: Unable to get button position")
+	return 0
+}
+
+func PocketCards(img image.Image) ([]card.Card, error) {
+	val0 := m.Match("pocketValue0", img)
+	col0 := m.Match("pocketColor0", img)
+
+	val1 := m.Match("pocketValue1", img)
+	col1 := m.Match("pocketColor1", img)
+
+	if len(val0) == 0 || len(col0) == 0 {
+		val0 = "someInvalidCard"
+		col0 = "someInvalidCard"
+	}
+	if len(val1) == 0 || len(col1) == 0 {
+		val1 = "someInvalidCard"
+		col1 = "someInvalidCard"
+	}
+
+	c1, err1 := card.ParseCard(fmt.Sprintf("%v%v", val0[3:], col0[:1]))
+	c2, err2 := card.ParseCard(fmt.Sprintf("%v%v", val1[3:], col1[:1]))
+
+	if err1 != nil {
+		return []card.Card{c1, c2}, err1
+	}
+
+	return []card.Card{c1, c2}, err2
+}
+
+func CommunityCards(img image.Image) ([]card.Card, error) {
+
+	var cards []card.Card
+
+	for i := 0; i < 5; i++ {
+
+		val := m.Match(fmt.Sprintf("commValue%v", i), img)
+		col := m.Match(fmt.Sprintf("commColor%v", i), img)
+
+		if len(val) == 0 || len(col) == 0 {
+			break
+		}
+
+		c, err := card.ParseCard(fmt.Sprintf("%v%v", val[3:], col[:1]))
+		if err != nil {
+			return nil, err
+		}
+
+		cards = append(cards, c)
+	}
+
+	num := len(cards)
+	if num != 0 && num != 3 && num != 4 && num != 5 {
+		return nil, fmt.Errorf("error: Unexpected amount of community cards %v", num)
+	}
+
+	return cards, nil
+}
+
+func CurrentPlayer(img image.Image) poker.PlayerPosition {
+	for i := 0; i < 6; i++ {
+		active := m.Match("plCurrent"+strconv.Itoa(i), img)
+		if active != "" {
+			return poker.PlayerPosition(i + 1)
+		}
+	}
+
 	return 0
 }

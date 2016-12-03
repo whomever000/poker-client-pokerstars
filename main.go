@@ -6,13 +6,13 @@ import "C"
 import (
 	"encoding/json"
 	"fmt"
+	"image"
 	"log"
 	"strings"
 	"time"
 
-	"image"
-
 	"github.com/whomever000/poker-common"
+	"github.com/whomever000/poker-common/card"
 	"github.com/whomever000/poker-common/window"
 	"github.com/whomever000/poker-vision"
 )
@@ -23,6 +23,9 @@ const (
 )
 
 var img image.Image
+var h *poker.Hand
+
+var handid = 1
 
 func init() {
 
@@ -74,16 +77,100 @@ func Attach(windowName string) error {
 	return nil
 }
 
+////////////////////////////////////////////////////////////////////////////////
+var (
+	better        poker.PlayerPosition
+	activePlayers []int //TODO: use playerPosition rather than int.
+)
+
+func main() {
+
+	var currPlayer poker.PlayerPosition
+
+	// Attach to table window.
+	Attach("Halley")
+
+	// Handle hands.
+	for {
+
+		// Wait for new hand.
+		// Wait for pocket cards to be delt.
+		NewHand()
+
+		// Prepare for new hand.
+		currPlayer = nextActivePlayer(h.BigBlind)
+		better = currPlayer
+
+		// Handle betting rounds.
+		for bettingRound := 0; bettingRound < 4; bettingRound++ {
+
+			// Wait for new betting round.
+			// Wait for community cards to be delt.
+			NewBettingRound(bettingRound)
+
+			// More than 1 player still active?
+			if len(ActivePlayers(img)) > 1 {
+
+			bettingRoundLoop:
+				for {
+
+					// Wait for player action.
+					NewPlayerAction(currPlayer)
+
+					// Consider next player.
+					next := poker.NextPlayerPosition(currPlayer, 6)
+
+					// Consider next active player.
+					currPlayer = nextActivePlayer(currPlayer)
+
+					// Check if betting round is done.
+					// Next active player is the better? (i.e. end of round)
+					if currPlayer == better {
+						break
+					}
+					// A player between current and next active player is the
+					// better? (i.e. end of round).
+					for next != currPlayer {
+						if next == better {
+							break bettingRoundLoop
+						}
+
+						next = poker.NextPlayerPosition(next, 6)
+					}
+				}
+
+				currPlayer = nextActivePlayer(h.Button)
+				better = currPlayer
+
+			} else {
+				fmt.Println("Only 1 left")
+			}
+
+			//fmt.Println(returnHand())
+		}
+	}
+}
+
+func returnHand() string {
+	b, err := json.MarshalIndent(h, "", "	")
+	if err != nil {
+		log.Printf("error: Failed to encode JSON. %v", err)
+		return ""
+	}
+
+	return string(b)
+}
+
 // NewHand waits for a new hand to start, then returns the initial hand JSON
 // structure.
 func NewHand() string {
 
-	fmt.Println("Waiting for new round")
+	log.Println("Waiting for new hand")
 	waitForNewHand()
-	fmt.Println("New round")
+	log.Println("New hand")
 
-	h := new(poker.Hand)
-
+	// Create new hand object and populate with initial meta-data.
+	h = new(poker.Hand)
 	h.Client = client()
 	h.Table = table()
 	h.HandID = handID()
@@ -91,34 +178,132 @@ func NewHand() string {
 	h.Button = button()
 	h.SmallBlind = smallBlind()
 	h.BigBlind = bigBlind()
+	h.ThisPlayer = thisPlayer()
 	h.Players = players()
 
-	b, err := json.MarshalIndent(h, "", "	")
+	// Return JSON encoded hand.
+	return returnHand()
+}
+
+// NewBettingRound waits for community cards to be delt, then returns the hand
+// JSON structure with added betting round information.
+func NewBettingRound(bettingRound int) string {
+
+	log.Println("Waiting for new betting round")
+
+	var (
+		numExCC   int
+		commCards []card.Card
+		round     poker.Round
+	)
+
+	// Determine the expected number of community cards.
+	switch bettingRound {
+	case 0:
+		numExCC = 0
+	case 1:
+		numExCC = 3
+	case 2:
+		numExCC = 4
+	case 3:
+		numExCC = 5
+	case 4:
+		log.Panicf("unexpected betting round %v, expected 0,1,2 or 3",
+			bettingRound)
+	}
+
+	// Wait for the expected number of community cards to be delt.
+	for numExCC != len(commCards) {
+		commCards, _ = CommunityCards(img)
+		getImage()
+		time.Sleep(time.Millisecond * 100)
+	}
+
+	// Parse pot size.
+	pot, err := Pot(img)
 	if err != nil {
-		log.Printf("error: Failed to encode JSON. %v", err)
+		log.Printf("error: Failed to get pot. %v", err)
 		return ""
 	}
 
-	fmt.Println(string(b))
+	// Initialize round object.
+	round.Cards = commCards
+	round.Pot = pot
 
-	return string(b)
+	// Add it to hand.
+	h.Rounds = append(h.Rounds, round)
+
+	log.Println("New betting round")
+
+	// Return JSON encoded hand.
+	return returnHand()
 }
 
-func main() {
+// NewPlayerAction waits for the player to perform an action, then returns the
+// hand JSON structure with added action information.
+func NewPlayerAction(pos poker.PlayerPosition) string {
 
-	Attach("Halley")
+	var (
+		action      poker.PlayerAction
+		innerAction poker.Action
+	)
 
-	NewHand()
+	fmt.Print("Player", pos, ": ")
 
-	/*
-		r, _ := os.Open("./img.png")
-		defer r.Close()
-		img, _ := png.Decode(r)
+	getImage()
 
-		for i := 1; i <= 6; i++ {
-			fmt.Println(PlayerName(img, poker.PlayerPosition(i)))
+	// Wait for player to loose his turn.
+	for CurrentPlayer(img) == pos {
+		getImage()
+		time.Sleep(time.Millisecond * 100)
+	}
+
+	// The player's name field shows the action - read it.
+	a, err := PlayerName(img, pos)
+	if err != nil {
+		// TODO: uncomment
+		//log.Printf("error: Failed to get player action. %v", err)
+		return ""
+	}
+
+	// Create action object
+	// TODO: Read call/bet/raise amounts.
+	a = strings.ToLower(a)
+	switch a {
+	case "fold":
+		innerAction = poker.NewFoldAction()
+		for i, p := range activePlayers {
+			if p == int(pos)-1 {
+				activePlayers = append(activePlayers[:i], activePlayers[i+1:]...)
+				break
+			}
 		}
-	*/
+	case "check":
+		innerAction = poker.NewCheckAction()
+	case "call":
+		innerAction = poker.NewCallAction(poker.NewAmount(0.00))
+	case "bet":
+		innerAction = poker.NewBetAction(poker.NewAmount(0.00))
+		better = pos
+	case "raise":
+		innerAction = poker.NewRaiseAction(poker.NewAmount(0.00))
+		better = pos
+	default:
+		log.Printf("error: Invalid player action: %v", a)
+	}
+
+	// Initialize PlayerAction object
+	action.Position = pos
+	action.Action = innerAction
+
+	fmt.Println(innerAction)
+
+	// Insert into last round.
+	currRound := len(h.Rounds)
+	h.Rounds[currRound-1].Actions = append(h.Rounds[currRound-1].Actions, action)
+
+	// Return JSON encoded hand.
+	return returnHand()
 }
 
 // client returns the name of the client.
@@ -161,7 +346,9 @@ func table() poker.Table {
 
 // handID returns current hand ID.
 func handID() int {
-	return 42
+	ret := handid
+	handid++
+	return ret
 }
 
 // date returns the time the hand was started.
@@ -177,37 +364,24 @@ func button() poker.PlayerPosition {
 // smallBlind returns the small blind position.
 func smallBlind() poker.PlayerPosition {
 
-	btn := button()
-	active := ActivePlayers(img)
-
-	for i := 0; i < 6; i++ {
-		pos := poker.NextPlayerPosition(btn, 6)
-		for a := 0; a < len(active); a++ {
-			if active[i] == int(pos)-1 {
-				return pos
-			}
-		}
-	}
-
-	return 0
+	return nextActivePlayer(h.Button)
 }
 
 // bigBlind returns the big blind position.
 func bigBlind() poker.PlayerPosition {
 
-	sb := smallBlind()
-	active := ActivePlayers(img)
+	return nextActivePlayer(h.SmallBlind)
+}
 
-	for i := 0; i < 6; i++ {
-		pos := poker.NextPlayerPosition(sb, 6)
-		for a := 0; a < len(active); a++ {
-			if active[i] == int(pos)-1 {
-				return pos
-			}
-		}
+func thisPlayer() *poker.PlayerCards {
+
+	cards, err := PocketCards(img)
+	if err != nil {
+		log.Printf("error: Failed to get pocket cards. %v", err)
+		return nil
 	}
 
-	return 0
+	return &poker.PlayerCards{4, cards}
 }
 
 func players() []poker.Player {
@@ -219,7 +393,7 @@ func players() []poker.Player {
 		index := i
 		go func() {
 			name, _ := PlayerName(img, poker.PlayerPosition(index+1))
-			stack, _ := Stack(img, poker.PlayerPosition(index+1))
+			stack, _ := PlayerStack(img, poker.PlayerPosition(index+1))
 
 			players[index] = poker.Player{Name: name, Stack: stack}
 			sync <- true
@@ -250,10 +424,19 @@ func waitForNewHand() {
 
 			// Has number of active players increased?
 		} else if numActive > lowestNum {
+
 			// This is a new hand.
+
+			// Wait for all players to become active.
+			// This does not happen at the exact same time.
+			time.Sleep(time.Millisecond * 500)
+
+			// Store active players.
+			getImage()
+			activePlayers = ActivePlayers(img)
+
 			// Wait for 'Post BB' to disappear.
 			time.Sleep(time.Millisecond * 1000)
-			getImage()
 			return
 		}
 
@@ -267,4 +450,19 @@ func getImage() {
 	if err != nil {
 		panic("Could not get image from window")
 	}
+}
+
+func nextActivePlayer(pos poker.PlayerPosition) poker.PlayerPosition {
+
+	for i := 0; i < 6; i++ {
+		pos = poker.NextPlayerPosition(pos, 6)
+
+		for a := 0; a < len(activePlayers); a++ {
+			if activePlayers[a] == int(pos)-1 {
+				return pos
+			}
+		}
+	}
+
+	return 0
 }

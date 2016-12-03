@@ -312,58 +312,58 @@
 	],
 	"Refs":[{
 			"Name":"spades",
-			"Ref":"image:./client/pokerstars/references/spades.png"			
+			"Ref":"image:./references/spades.png"			
 		},{
 			"Name":"hearts",
-			"Ref":"image:./client/pokerstars/references/hearts.png"
+			"Ref":"image:./references/hearts.png"
 		},{
 			"Name":"clubs",
-			"Ref":"image:./client/pokerstars/references/clubs.png"
+			"Ref":"image:./references/clubs.png"
 		},{
 			"Name":"diamonds",
-			"Ref":"image:./client/pokerstars/references/diamonds.png"
+			"Ref":"image:./references/diamonds.png"
 		},
 
 
 		{
 			"Name":"val2",
-			"Ref":"imageM:./client/pokerstars/references/val2.png"
+			"Ref":"imageM:./references/val2.png"
 		},{
 			"Name":"val3",
-			"Ref":"imageM:./client/pokerstars/references/val3.png"
+			"Ref":"imageM:./references/val3.png"
 		},{
 			"Name":"val4",
-			"Ref":"imageM:./client/pokerstars/references/val4.png"
+			"Ref":"imageM:./references/val4.png"
 		},{
 			"Name":"val5",
-			"Ref":"imageM:./client/pokerstars/references/val5.png"
+			"Ref":"imageM:./references/val5.png"
 		},{
 			"Name":"val6",
-			"Ref":"imageM:./client/pokerstars/references/val6.png"
+			"Ref":"imageM:./references/val6.png"
 		},{
 			"Name":"val7",
-			"Ref":"imageM:./client/pokerstars/references/val7.png"
+			"Ref":"imageM:./references/val7.png"
 		},{
 			"Name":"val8",
-			"Ref":"imageM:./client/pokerstars/references/val8.png"
+			"Ref":"imageM:./references/val8.png"
 		},{
 			"Name":"val9",
-			"Ref":"imageM:./client/pokerstars/references/val9.png"
+			"Ref":"imageM:./references/val9.png"
 		},{
 			"Name":"valT",
-			"Ref":"imageM:./client/pokerstars/references/valT.png"
+			"Ref":"imageM:./references/valT.png"
 		},{
 			"Name":"valJ",
-			"Ref":"imageM:./client/pokerstars/references/valJ.png"
+			"Ref":"imageM:./references/valJ.png"
 		},{
 			"Name":"valQ",
-			"Ref":"imageM:./client/pokerstars/references/valQ.png"
+			"Ref":"imageM:./references/valQ.png"
 		},{
 			"Name":"valK",
-			"Ref":"imageM:./client/pokerstars/references/valK.png"
+			"Ref":"imageM:./references/valK.png"
 		},{
 			"Name":"valA",
-			"Ref":"imageM:./client/pokerstars/references/valA.png"
+			"Ref":"imageM:./references/valA.png"
 		},
 
 		{
