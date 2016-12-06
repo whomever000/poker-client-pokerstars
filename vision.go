@@ -53,7 +53,7 @@ func Pot(img image.Image) (poker.Amount, error) {
 	return poker.ParseAmount(pot)
 }
 
-// Stack returns a player's stack.
+// PlayerStack returns a player's stack.
 func PlayerStack(img image.Image, position poker.PlayerPosition) (poker.Amount, error) {
 
 	if position < 1 {
@@ -62,14 +62,14 @@ func PlayerStack(img image.Image, position poker.PlayerPosition) (poker.Amount, 
 	stack := m.Match(fmt.Sprintf("plStack%v", int(position)-1), img)
 
 	// All in is represented as -1.
-	if strings.Contains(stack, "All") {
-		return poker.NewAmount(-1), nil
+	if stack == "allin" {
+		return poker.Amount(-1), nil
 	}
 
 	return poker.ParseAmount(stack)
 }
 
-// Name returns a player's name.
+// PlayerName returns a player's name.
 func PlayerName(img image.Image, position poker.PlayerPosition) (string, error) {
 
 	if position < 1 {
@@ -79,12 +79,15 @@ func PlayerName(img image.Image, position poker.PlayerPosition) (string, error) 
 	return m.Match(fmt.Sprintf("plName%v", int(position)-1), img), nil
 }
 
-func ActivePlayers(img image.Image) (ret []int) {
+// ActivePlayers returns active players.
+func ActivePlayers(img image.Image) (ret []poker.PlayerPosition) {
 	for i := 0; i < 6; i++ {
 		active := m.Match("plActive"+strconv.Itoa(i), img)
 		if len(active) != 0 {
-			ret = append(ret, i)
+			ret = append(ret, poker.PlayerPosition(i+1))
+			fmt.Print(active, i, ": ")
 		}
+
 	}
 	return
 }

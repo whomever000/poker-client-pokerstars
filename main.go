@@ -68,10 +68,10 @@ func Attach(windowName string) error {
 	}
 
 	// Resize window.
-	err = win.Resize(windowWidth, windowHeight)
-	if err != nil {
-		log.Printf("error: Failed to resize window %v", err)
-	}
+	// err = win.Resize(windowWidth, windowHeight)
+	// if err != nil {
+	// 	log.Printf("error: Failed to resize window %v", err)
+	// }
 
 	log.Printf("Attached to window '%v' of process '%v'", name, process)
 	return nil
@@ -80,7 +80,8 @@ func Attach(windowName string) error {
 ////////////////////////////////////////////////////////////////////////////////
 var (
 	better        poker.PlayerPosition
-	activePlayers []int //TODO: use playerPosition rather than int.
+	activePlayers []poker.PlayerPosition
+	playerStacks  [6]poker.Amount
 )
 
 func main() {
@@ -148,6 +149,7 @@ func main() {
 
 			//fmt.Println(returnHand())
 		}
+		fmt.Println(h)
 	}
 }
 
@@ -266,6 +268,16 @@ func NewPlayerAction(pos poker.PlayerPosition) string {
 		return ""
 	}
 
+	// Get the players stack size.
+	newStack, err := PlayerStack(img, pos)
+	if err != nil {
+		fmt.Printf("error: Failed to parse player stack. %v", err)
+	}
+	// Calculate amount that was called/betted/raised.
+	amount := playerStacks[pos-1] - newStack
+	// Update player stack reference.
+	playerStacks[pos-1] = newStack
+
 	// Create action object
 	// TODO: Read call/bet/raise amounts.
 	a = strings.ToLower(a)
@@ -273,7 +285,7 @@ func NewPlayerAction(pos poker.PlayerPosition) string {
 	case "fold":
 		innerAction = poker.NewFoldAction()
 		for i, p := range activePlayers {
-			if p == int(pos)-1 {
+			if p == pos {
 				activePlayers = append(activePlayers[:i], activePlayers[i+1:]...)
 				break
 			}
@@ -281,12 +293,12 @@ func NewPlayerAction(pos poker.PlayerPosition) string {
 	case "check":
 		innerAction = poker.NewCheckAction()
 	case "call":
-		innerAction = poker.NewCallAction(poker.NewAmount(0.00))
+		innerAction = poker.NewCallAction(amount)
 	case "bet":
-		innerAction = poker.NewBetAction(poker.NewAmount(0.00))
+		innerAction = poker.NewBetAction(amount)
 		better = pos
 	case "raise":
-		innerAction = poker.NewRaiseAction(poker.NewAmount(0.00))
+		innerAction = poker.NewRaiseAction(amount)
 		better = pos
 	default:
 		log.Printf("error: Invalid player action: %v", a)
@@ -296,7 +308,7 @@ func NewPlayerAction(pos poker.PlayerPosition) string {
 	action.Position = pos
 	action.Action = innerAction
 
-	fmt.Println(innerAction)
+	fmt.Println(innerAction, "\tStack:", playerStacks[pos-1])
 
 	// Insert into last round.
 	currRound := len(h.Rounds)
@@ -396,6 +408,7 @@ func players() []poker.Player {
 			stack, _ := PlayerStack(img, poker.PlayerPosition(index+1))
 
 			players[index] = poker.Player{Name: name, Stack: stack}
+			playerStacks[index] = stack
 			sync <- true
 		}()
 	}
@@ -413,12 +426,30 @@ func waitForNewHand() {
 	numActive := 0
 	lowestNum := 6
 
+	first := true
+
 	for {
 		// Grab image from window.
 		getImage()
 
+		if first {
+			/*
+				for i := 0; i < 6; i++ {
+					val, _ := PlayerName(img, poker.PlayerPosition(i+1))
+
+					fmt.Println(val)
+
+				}
+				fmt.Println("---------------")*/
+		}
+		first = false
+		//val, _ := Pot(img)
+		//val := CurrentPlayer(img)
+		//fmt.Println(val)
+
 		// Has number of active players decreased?
 		numActive = len(ActivePlayers(img))
+		fmt.Println(numActive)
 		if numActive < lowestNum {
 			lowestNum = numActive
 
@@ -437,6 +468,7 @@ func waitForNewHand() {
 
 			// Wait for 'Post BB' to disappear.
 			time.Sleep(time.Millisecond * 1000)
+			getImage()
 			return
 		}
 
@@ -458,7 +490,7 @@ func nextActivePlayer(pos poker.PlayerPosition) poker.PlayerPosition {
 		pos = poker.NextPlayerPosition(pos, 6)
 
 		for a := 0; a < len(activePlayers); a++ {
-			if activePlayers[a] == int(pos)-1 {
+			if activePlayers[a] == pos {
 				return pos
 			}
 		}

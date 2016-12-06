@@ -149,141 +149,141 @@
 
 		{
 			"Name":"plName0",
-			"Src":[31,93,69,13],
+			"Src":[561,46,103,19],
 			"Refs":["actionOCR"]
 		},{
 			"Name":"plName1",
-			"Src":[270,40,69,13],
+			"Src":[659,251,103,19],
 			"Refs":["actionOCR"]
 		},{
 			"Name":"plName2",
-			"Src":[543,93,69,13],
+			"Src":[561,361,103,19],
 			"Refs":["actionOCR"]
 		},{
 			"Name":"plName3",
-			"Src":[543,232,69,13],
+			"Src":[118,361,103,19],
 			"Refs":["actionOCR"]
 		},{
 			"Name":"plName4",
-			"Src":[301,310,69,13],
+			"Src":[32,251,103,19],
 			"Refs":["actionOCR"]
 		},{
 			"Name":"plName5",
-			"Src":[31,232,69,13],
+			"Src":[127,47,103,19],
 			"Refs":["actionOCR"]
 		},
 
 
 		{
 			"Name":"plStack0",
-			"Src":[31,112,69,13],
+			"Src":[574,67,73,17],
 			"Refs":["stackOCR"]
 		},{
 			"Name":"plStack1",
-			"Src":[270,59,69,13],
+			"Src":[675,272,73,17],
 			"Refs":["stackOCR"]
 		},{
 			"Name":"plStack2",
-			"Src":[543,112,69,13],
+			"Src":[581,382,73,17],
 			"Refs":["stackOCR"]
 		},{
 			"Name":"plStack3",
-			"Src":[543,251,69,13],
+			"Src":[134,382,73,17],
 			"Refs":["stackOCR"]
 		},{
 			"Name":"plStack4",
-			"Src":[301,329,69,13],
+			"Src":[52,271,73,17],
 			"Refs":["stackOCR"]
 		},{
 			"Name":"plStack5",
-			"Src":[31,251,69,13],
+			"Src":[146,67,73,17],
 			"Refs":["stackOCR"]
 		},
 
 
 		{
 			"Name":"plCurrent0",
-			"Src":[46,129],
+			"Src":[564,84],
 			"Refs":["current"]
 		},{
 			"Name":"plCurrent1",
-			"Src":[285,76],
+			"Src":[662,288],
 			"Refs":["current"]
 		},{
 			"Name":"plCurrent2",
-			"Src":[538,129],
+			"Src":[563,398],
 			"Refs":["current"]
 		},{
 			"Name":"plCurrent3",
-			"Src":[538,268],
+			"Src":[121,398],
 			"Refs":["current"]
 		},{
 			"Name":"plCurrent4",
-			"Src":[297,346],
+			"Src":[35,288],
 			"Refs":["current"]
 		},{
 			"Name":"plCurrent5",
-			"Src":[46,268],
+			"Src":[130,84],
 			"Refs":["current"]
 		},
 
 
 		{
 			"Name":"plActive0",
-			"Src":[79,87],
-			"Refs":["ingame"]
+			"Src":[663,88],
+			"Refs":["active"]
 		},{
 			"Name":"plActive1",
-			"Src":[319,34],
-			"Refs":["ingame"]
+			"Src":[761,292],
+			"Refs":["active"]
 		},{
 			"Name":"plActive2",
-			"Src":[560,87],
-			"Refs":["ingame"]
+			"Src":[663,402],
+			"Refs":["active"]
 		},{
 			"Name":"plActive3",
-			"Src":[560,226],
-			"Refs":["ingame"]
+			"Src":[116,402],
+			"Refs":["active"]
 		},{
 			"Name":"plActive4",
-			"Src":[319,304],
-			"Refs":["ingame"]
+			"Src":[30,292],
+			"Refs":["active"]
 		},{
 			"Name":"plActive5",
-			"Src":[79,226],
-			"Refs":["ingame"]
+			"Src":[125,88],
+			"Refs":["active"]
 		},
 
 		{
 			"Name":"pot",
-			"Src":[272,123,100,14],
+			"Src":[348,42,109,20],
 			"Refs":["potOCR"]
 		},
 
 		
 		{
 			"Name":"button0",
-			"Src":[145,136],
-			"Refs":["button"]
-		},{
-			"Name":"button1",
-			"Src":[274,94],
-			"Refs":["button"]
-		},{
-			"Name":"button2",
 			"Src":[505,141],
 			"Refs":["button"]
 		},{
-			"Name":"button3",
+			"Name":"button1",
 			"Src":[477,243],
 			"Refs":["button"]
 		},{
-			"Name":"button4",
+			"Name":"button2",
 			"Src":[376,272],
 			"Refs":["button"]
 		},{
-			"Name":"button5",
+			"Name":"button3",
 			"Src":[165,243],
+			"Refs":["button"]
+		},{
+			"Name":"button4",
+			"Src":[145,136],
+			"Refs":["button"]
+		},{
+			"Name":"button5",
+			"Src":[274,94],
 			"Refs":["button"]
 		},
 
@@ -368,10 +368,10 @@
 
 		{
 			"Name":"actionOCR",
-			"Ref":"ocr:135"
+			"Ref":"ocr:300"
 		},{
 			"Name":"potOCR",
-			"Ref":"ocr:203"
+			"Ref":"ocr:200"
 		},{
 			"Name":"stackOCR",
 			"Ref":"ocr:155"
@@ -379,12 +379,12 @@
 
 		{
 			"Name":"current",
-			"Ref":"color:#181818"
+			"Ref":"color:#ff0000"
 		},
 
 		{
-			"Name":"ingame",
-			"Ref":"color:#E3E1E0"
+			"Name":"active",
+			"Ref":"color:#808080"
 		},
 		{
 			"Name":"button",
