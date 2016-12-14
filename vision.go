@@ -11,8 +11,13 @@ import (
 
 	"github.com/whomever000/poker-common"
 	"github.com/whomever000/poker-common/card"
+	"github.com/whomever000/poker-common/window"
 	"github.com/whomever000/poker-vision"
 )
+
+func VisualizeSource(img image.Image, srcs []string) image.Image {
+	return m.VisualizeSource(img, srcs)
+}
 
 var m pokervision.Matcher
 
@@ -45,10 +50,21 @@ func LoadReferences() error {
 // Pot returns the current pot.
 func Pot(img image.Image) (poker.Amount, error) {
 	pot := m.Match("pot", img)
+	window.DebugImage(VisualizeSource(img, []string{"pot"}), "vision")
 
 	// The string includes 'Pot:', so remove this before parsing.
 	pot = strings.ToLower(pot)
 	pot = strings.Replace(pot, "pot:", "", -1)
+	pot = strings.Replace(pot, " ", "", -1)
+	pot = strings.Replace(pot, "L", "1.", -1)
+	pot = strings.Replace(pot, "S", "5.", -1)
+
+	if len(pot) == 0 {
+		return 0, fmt.Errorf("Failed to get pot, got empty string")
+	}
+
+	// Remote '$' as it may be misinterpreted by OCR.
+	pot = pot[1:]
 
 	return poker.ParseAmount(pot)
 }
@@ -59,7 +75,10 @@ func PlayerStack(img image.Image, position poker.PlayerPosition) (poker.Amount, 
 	if position < 1 {
 		return 0, fmt.Errorf("Invalid player: %v", int(position))
 	}
-	stack := m.Match(fmt.Sprintf("plStack%v", int(position)-1), img)
+	p := fmt.Sprintf("plStack%v", int(position)-1)
+	stack := m.Match(p, img)
+	stack = strings.Replace(stack, "L", "1.", -1)
+	window.DebugImage(VisualizeSource(img, []string{p}), "vision")
 
 	// All in is represented as -1.
 	if stack == "allin" {
@@ -76,19 +95,46 @@ func PlayerName(img image.Image, position poker.PlayerPosition) (string, error) 
 		return "", fmt.Errorf("Invalid player: %v", int(position))
 	}
 
-	return m.Match(fmt.Sprintf("plName%v", int(position)-1), img), nil
+	p := fmt.Sprintf("plName%v", int(position)-1)
+	name := m.Match(p, img)
+	window.DebugImage(VisualizeSource(img, []string{p}), "vision")
+
+	return name, nil
+}
+
+// PlayerName returns a player's name.
+func PlayerAction(img image.Image, position poker.PlayerPosition) (string, error) {
+
+	if position < 1 {
+		return "", fmt.Errorf("Invalid player: %v", int(position))
+	}
+
+	p := fmt.Sprintf("plAction%v", int(position)-1)
+	action := m.Match(p, img)
+	window.DebugImage(VisualizeSource(img, []string{p}), "vision")
+
+	return action, nil
 }
 
 // ActivePlayers returns active players.
 func ActivePlayers(img image.Image) (ret []poker.PlayerPosition) {
+
+	var srcs []string
+
 	for i := 0; i < 6; i++ {
-		active := m.Match("plActive"+strconv.Itoa(i), img)
+
+		p := fmt.Sprintf("plActive%v", i)
+		srcs = append(srcs, p)
+
+		active := m.Match(p, img)
 		if len(active) != 0 {
 			ret = append(ret, poker.PlayerPosition(i+1))
-			fmt.Print(active, i, ": ")
 		}
 
 	}
+
+	window.DebugImage(VisualizeSource(img, srcs), "vision")
+
 	return
 }
 

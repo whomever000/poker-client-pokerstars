@@ -149,27 +149,53 @@
 
 		{
 			"Name":"plName0",
-			"Src":[561,46,103,19],
-			"Refs":["actionOCR"]
+			"Src":[561,46,101,19],
+			"Refs":["nameOCR"]
 		},{
 			"Name":"plName1",
-			"Src":[659,251,103,19],
-			"Refs":["actionOCR"]
+			"Src":[659,251,101,19],
+			"Refs":["nameOCR"]
 		},{
 			"Name":"plName2",
-			"Src":[561,361,103,19],
-			"Refs":["actionOCR"]
+			"Src":[561,361,101,19],
+			"Refs":["nameOCR"]
 		},{
 			"Name":"plName3",
-			"Src":[118,361,103,19],
-			"Refs":["actionOCR"]
+			"Src":[118,361,101,19],
+			"Refs":["nameOCR"]
 		},{
 			"Name":"plName4",
-			"Src":[32,251,103,19],
-			"Refs":["actionOCR"]
+			"Src":[32,251,101,19],
+			"Refs":["nameOCR"]
 		},{
 			"Name":"plName5",
-			"Src":[127,47,103,19],
+			"Src":[127,47,101,19],
+			"Refs":["nameOCR"]
+		},
+
+		{
+			"Name":"plAction0",
+			"Src":[502,52,51,28],
+			"Refs":["actionOCR"]
+		},{
+			"Name":"plAction1",
+			"Src":[681,203,51,28],
+			"Refs":["actionOCR"]
+		},{
+			"Name":"plAction2",
+			"Src":[502,368,51,28],
+			"Refs":["actionOCR"]
+		},{
+			"Name":"plAction3",
+			"Src":[230,368,51,28],
+			"Refs":["actionOCR"]
+		},{
+			"Name":"plAction4",
+			"Src":[52,203,51,28],
+			"Refs":["actionOCR"]
+		},{
+			"Name":"plAction5",
+			"Src":[230,52,51,28],
 			"Refs":["actionOCR"]
 		},
 
@@ -180,23 +206,23 @@
 			"Refs":["stackOCR"]
 		},{
 			"Name":"plStack1",
-			"Src":[675,272,73,17],
+			"Src":[674,272,73,17],
 			"Refs":["stackOCR"]
 		},{
 			"Name":"plStack2",
-			"Src":[581,382,73,17],
+			"Src":[575,382,73,17],
 			"Refs":["stackOCR"]
 		},{
 			"Name":"plStack3",
-			"Src":[134,382,73,17],
+			"Src":[132,382,73,17],
 			"Refs":["stackOCR"]
 		},{
 			"Name":"plStack4",
-			"Src":[52,271,73,17],
+			"Src":[46,271,73,17],
 			"Refs":["stackOCR"]
 		},{
 			"Name":"plStack5",
-			"Src":[146,67,73,17],
+			"Src":[141,67,73,17],
 			"Refs":["stackOCR"]
 		},
 
@@ -256,34 +282,34 @@
 
 		{
 			"Name":"pot",
-			"Src":[348,42,109,20],
+			"Src":[352,42,101,19],
 			"Refs":["potOCR"]
 		},
 
 		
 		{
 			"Name":"button0",
-			"Src":[505,141],
+			"Src":[488,115],
 			"Refs":["button"]
 		},{
 			"Name":"button1",
-			"Src":[477,243],
+			"Src":[648,202],
 			"Refs":["button"]
 		},{
 			"Name":"button2",
-			"Src":[376,272],
+			"Src":[577,360],
 			"Refs":["button"]
 		},{
 			"Name":"button3",
-			"Src":[165,243],
+			"Src":[320,340],
 			"Refs":["button"]
 		},{
 			"Name":"button4",
-			"Src":[145,136],
+			"Src":[152,276],
 			"Refs":["button"]
 		},{
 			"Name":"button5",
-			"Src":[274,94],
+			"Src":[234,119],
 			"Refs":["button"]
 		},
 
@@ -367,14 +393,18 @@
 		},
 
 		{
+			"Name":"nameOCR",
+			"Ref":"ocr:300"
+		},
+		{
 			"Name":"actionOCR",
 			"Ref":"ocr:300"
 		},{
 			"Name":"potOCR",
-			"Ref":"ocr:200"
+			"Ref":"ocr:275"
 		},{
 			"Name":"stackOCR",
-			"Ref":"ocr:155"
+			"Ref":"ocr:275"
 		},
 
 		{
@@ -388,7 +418,7 @@
 		},
 		{
 			"Name":"button",
-			"Ref":"color:#F7FCFB"
+			"Ref":"color:#0000FF"
 		}
 	]
 }

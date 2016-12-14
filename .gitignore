@@ -3,9 +3,16 @@
 *.a
 *.so
 
+# Files
+bindata.go
+debug
+panic.png
+poker-client-pokerstars
+
 # Folders
 _obj
 _test
+debug_img
 
 # Architecture specific extensions/prefixes
 *.[568vq]

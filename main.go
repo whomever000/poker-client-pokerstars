@@ -8,8 +8,11 @@ import (
 	"fmt"
 	"image"
 	"log"
+	"os"
 	"strings"
 	"time"
+
+	"image/png"
 
 	"github.com/whomever000/poker-common"
 	"github.com/whomever000/poker-common/card"
@@ -23,9 +26,18 @@ const (
 )
 
 var img image.Image
+
 var h *poker.Hand
 
 var handid = 1
+
+func PanicImage(v interface{}) {
+	f, _ := os.Create("panic.png")
+	png.Encode(f, img)
+	f.Close()
+
+	panic(v)
+}
 
 func init() {
 
@@ -183,6 +195,10 @@ func NewHand() string {
 	h.ThisPlayer = thisPlayer()
 	h.Players = players()
 
+	// Wait for cards to be delt.
+	time.Sleep(500 * time.Millisecond)
+	getImage()
+
 	// Return JSON encoded hand.
 	return returnHand()
 }
@@ -224,6 +240,7 @@ func NewBettingRound(bettingRound int) string {
 	// Parse pot size.
 	pot, err := Pot(img)
 	if err != nil {
+		panic("[Pot]")
 		log.Printf("error: Failed to get pot. %v", err)
 		return ""
 	}
@@ -255,23 +272,31 @@ func NewPlayerAction(pos poker.PlayerPosition) string {
 	getImage()
 
 	// Wait for player to loose his turn.
-	for CurrentPlayer(img) == pos {
+	curr := CurrentPlayer(img)
+	fmt.Println("Current:", curr)
+
+	for curr == pos {
 		getImage()
 		time.Sleep(time.Millisecond * 100)
+
+		fmt.Println("Waiting..")
 	}
 
-	// The player's name field shows the action - read it.
-	a, err := PlayerName(img, pos)
+	// Get player's action.
+	a, err := PlayerAction(img, pos)
 	if err != nil {
 		// TODO: uncomment
 		//log.Printf("error: Failed to get player action. %v", err)
 		return ""
 	}
 
+	fmt.Println(pos, a)
+
 	// Get the players stack size.
 	newStack, err := PlayerStack(img, pos)
 	if err != nil {
 		fmt.Printf("error: Failed to parse player stack. %v", err)
+		PanicImage(nil)
 	}
 	// Calculate amount that was called/betted/raised.
 	amount := playerStacks[pos-1] - newStack
@@ -302,6 +327,7 @@ func NewPlayerAction(pos poker.PlayerPosition) string {
 		better = pos
 	default:
 		log.Printf("error: Invalid player action: %v", a)
+		panic("")
 	}
 
 	// Initialize PlayerAction object
@@ -312,6 +338,9 @@ func NewPlayerAction(pos poker.PlayerPosition) string {
 
 	// Insert into last round.
 	currRound := len(h.Rounds)
+	if currRound == 0 {
+		PanicImage("curround == 0")
+	}
 	h.Rounds[currRound-1].Actions = append(h.Rounds[currRound-1].Actions, action)
 
 	// Return JSON encoded hand.
@@ -405,7 +434,11 @@ func players() []poker.Player {
 		index := i
 		go func() {
 			name, _ := PlayerName(img, poker.PlayerPosition(index+1))
-			stack, _ := PlayerStack(img, poker.PlayerPosition(index+1))
+			stack, err := PlayerStack(img, poker.PlayerPosition(index+1))
+			if err != nil {
+				PanicImage(err)
+			}
+			fmt.Println(name, stack)
 
 			players[index] = poker.Player{Name: name, Stack: stack}
 			playerStacks[index] = stack
@@ -426,30 +459,12 @@ func waitForNewHand() {
 	numActive := 0
 	lowestNum := 6
 
-	first := true
-
 	for {
 		// Grab image from window.
 		getImage()
 
-		if first {
-			/*
-				for i := 0; i < 6; i++ {
-					val, _ := PlayerName(img, poker.PlayerPosition(i+1))
-
-					fmt.Println(val)
-
-				}
-				fmt.Println("---------------")*/
-		}
-		first = false
-		//val, _ := Pot(img)
-		//val := CurrentPlayer(img)
-		//fmt.Println(val)
-
 		// Has number of active players decreased?
 		numActive = len(ActivePlayers(img))
-		fmt.Println(numActive)
 		if numActive < lowestNum {
 			lowestNum = numActive
 
@@ -466,7 +481,7 @@ func waitForNewHand() {
 			getImage()
 			activePlayers = ActivePlayers(img)
 
-			// Wait for 'Post BB' to disappear.
+			// Wait for table to be cleared.
 			time.Sleep(time.Millisecond * 1000)
 			getImage()
 			return
