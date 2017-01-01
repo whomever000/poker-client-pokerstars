@@ -81,7 +81,7 @@ func PlayerStack(img image.Image, position poker.PlayerPosition) (poker.Amount, 
 	window.DebugImage(VisualizeSource(img, []string{p}), "vision")
 
 	// All in is represented as -1.
-	if stack == "allin" {
+	if stack == "AllIn" {
 		return poker.Amount(-1), nil
 	}
 
@@ -112,6 +112,10 @@ func PlayerAction(img image.Image, position poker.PlayerPosition) (string, error
 	p := fmt.Sprintf("plAction%v", int(position)-1)
 	action := m.Match(p, img)
 	window.DebugImage(VisualizeSource(img, []string{p}), "vision")
+
+	if strings.HasPrefix(action, "actionFold") {
+		action = "actionFold"
+	}
 
 	return action, nil
 }
@@ -178,6 +182,11 @@ func PocketCards(img image.Image) ([]card.Card, error) {
 func CommunityCards(img image.Image) ([]card.Card, error) {
 
 	var cards []card.Card
+
+	window.DebugImage(VisualizeSource(img, []string{
+		"commValue0", "commValue1", "commValue2", "commValue3", "commValue4",
+		"commColor0", "commColor1", "commColor2", "commColor3", "commColor4",
+	}), "vision")
 
 	for i := 0; i < 5; i++ {
 

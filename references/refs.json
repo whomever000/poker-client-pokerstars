@@ -175,28 +175,28 @@
 
 		{
 			"Name":"plAction0",
-			"Src":[502,52,51,28],
-			"Refs":["actionOCR"]
+			"Src":[500,56,52,18],
+			"Refs":["actionCheck", "actionCall", "actionBet", "actionRaise", "actionFold", "actionFold_bright"]
 		},{
 			"Name":"plAction1",
-			"Src":[681,203,51,28],
-			"Refs":["actionOCR"]
+			"Src":[683,205,52,18],
+			"Refs":["actionCheck", "actionCall", "actionBet", "actionRaise", "actionFold", "actionFold_bright"]
 		},{
 			"Name":"plAction2",
-			"Src":[502,368,51,28],
-			"Refs":["actionOCR"]
+			"Src":[500,370,52,18],
+			"Refs":["actionCheck", "actionCall", "actionBet", "actionRaise", "actionFold", "actionFold_bright"]
 		},{
 			"Name":"plAction3",
-			"Src":[230,368,51,28],
-			"Refs":["actionOCR"]
+			"Src":[229,370,52,18],
+			"Refs":["actionCheck", "actionCall", "actionBet", "actionRaise", "actionFold", "actionFold_bright"]
 		},{
 			"Name":"plAction4",
-			"Src":[52,203,51,28],
-			"Refs":["actionOCR"]
+			"Src":[56,205,52,18],
+			"Refs":["actionCheck", "actionCall", "actionBet", "actionRaise", "actionFold", "actionFold_bright"]
 		},{
 			"Name":"plAction5",
-			"Src":[230,52,51,28],
-			"Refs":["actionOCR"]
+			"Src":[238,56,52,18],
+			"Refs":["actionCheck", "actionCall", "actionBet", "actionRaise", "actionFold", "actionFold_bright"]
 		},
 
 
@@ -398,7 +398,7 @@
 		},
 		{
 			"Name":"actionOCR",
-			"Ref":"ocr:300"
+			"Ref":"ocr:305"
 		},{
 			"Name":"potOCR",
 			"Ref":"ocr:275"
@@ -419,6 +419,30 @@
 		{
 			"Name":"button",
 			"Ref":"color:#0000FF"
+		},
+		{
+			"Name":"actionFold",
+			"Ref":"image:./references/fold.png"
+		},
+		{
+			"Name":"actionFold_bright",
+			"Ref":"image:./references/fold_bright.png"
+		},
+		{
+			"Name":"actionRaise",
+			"Ref":"image:./references/raise.png"
+		},
+		{
+			"Name":"actionCall",
+			"Ref":"image:./references/call.png"
+		},
+		{
+			"Name":"actionCheck",
+			"Ref":"image:./references/check.png"
+		},
+		{
+			"Name":"actionBet",
+			"Ref":"image:./references/bet.png"
 		}
 	]
 }
