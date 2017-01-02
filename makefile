@@ -1,10 +1,10 @@
 run:
-	go-bindata ./references/... 
-	go run main.go vision.go bindata.go
+	go-bindata ./res/references/... 
+	go run main.go utils.go bindata.go $(arg1)
 	rm ./bindata.go
 
 build:
-	go-bindata ./references/...
+	go-bindata ./res/references/...
 	go build
 
 clean:

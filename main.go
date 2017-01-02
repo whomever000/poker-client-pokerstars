@@ -7,47 +7,38 @@ import (
 	"encoding/json"
 	"fmt"
 	"image"
-	"log"
-	"os"
 	"strings"
 	"time"
 
-	"image/png"
+	log "github.com/Sirupsen/logrus"
 
+	"flag"
+
+	"github.com/whomever000/poker-client-pokerstars/history"
+	"github.com/whomever000/poker-client-pokerstars/vision"
 	"github.com/whomever000/poker-common"
 	"github.com/whomever000/poker-common/card"
 	"github.com/whomever000/poker-common/window"
 	"github.com/whomever000/poker-vision"
 )
 
-const (
-	windowWidth  = 640.0
-	windowHeight = 441.0
+var (
+	img    image.Image
+	h      *poker.Hand
+	imgSrc vision.ImageSource
 )
 
-var img image.Image
-
-var h *poker.Hand
-
-var handid = 1
-
-func PanicImage(v interface{}) {
-	f, _ := os.Create("panic.png")
-	png.Encode(f, img)
-	f.Close()
-
-	panic(v)
-}
-
 func init() {
+
+	log.SetLevel(log.DebugLevel)
 
 	// Set custom file loader.
 	// This loads files from static data which is compiled into the application.
 	pokervision.SetFileLoader(&fileLoader{})
 
 	// Load reference file.
-	if err := LoadReferences(); err != nil {
-		panic("Failed to load references")
+	if err := vision.LoadReferences(); err != nil {
+		log.Panic("failed to load references", err)
 	}
 }
 
@@ -57,18 +48,18 @@ func Attach(windowName string) error {
 	// Find and attach to window.
 	win, err := window.Attach(windowName)
 	if err != nil {
-		log.Printf("error: Failed to attach to window '%v'. %v", windowName, err)
+		log.Errorf("failed to attach to window '%v'. %v", windowName, err)
 		return err
 	}
 
 	// Get window name.
 	name, err := win.Name()
 	if err != nil {
-		log.Printf("warning: Failed to get window name. %v", err)
+		log.Warnf("failed to get window name. %v", err)
 	}
 	strs := strings.Split(name, " - ")
 	if len(strs) < 3 {
-		log.Printf("warning: Window name has an unexpected format. %v. %v", name, err)
+		log.Warnf("window name has an unexpected format. %v. %v", name, err)
 	} else {
 		name = strs[0]
 	}
@@ -76,16 +67,10 @@ func Attach(windowName string) error {
 	// Get process name.
 	process, err := win.Process()
 	if err != nil {
-		log.Printf("warning: Failed to get process name. %v", err)
+		log.Warnf("failed to get process name. %v", err)
 	}
 
-	// Resize window.
-	// err = win.Resize(windowWidth, windowHeight)
-	// if err != nil {
-	// 	log.Printf("error: Failed to resize window %v", err)
-	// }
-
-	log.Printf("Attached to window '%v' of process '%v'", name, process)
+	log.Infof("attached to window '%v' of process '%v'", name, process)
 	return nil
 }
 
@@ -97,6 +82,14 @@ var (
 )
 
 func main() {
+
+	hFlag := flag.Int("h", 0, "pid of history")
+	flag.Parse()
+	if *hFlag != 0 {
+		imgSrc = history.NewImageSource(*hFlag, true)
+	} else {
+		imgSrc = vision.NewDefaultImageSource()
+	}
 
 	var currPlayer poker.PlayerPosition
 
@@ -123,7 +116,7 @@ func main() {
 			NewBettingRound(bettingRound)
 
 			// More than 1 player still active?
-			if len(ActivePlayers(img)) > 1 {
+			if len(vision.ActivePlayers(img)) > 1 {
 
 			bettingRoundLoop:
 				for {
@@ -178,9 +171,9 @@ func returnHand() string {
 // structure.
 func NewHand() string {
 
-	log.Println("Waiting for new hand")
+	log.Info("waiting for new hand")
 	waitForNewHand()
-	log.Println("New hand")
+	log.Info("New hand")
 
 	// Create new hand object and populate with initial meta-data.
 	h = new(poker.Hand)
@@ -196,7 +189,7 @@ func NewHand() string {
 
 	// Wait for cards to be delt.
 	time.Sleep(500 * time.Millisecond)
-	getImage()
+	getImage("waitForCardsDealt")
 
 	// Return JSON encoded hand.
 	return returnHand()
@@ -230,15 +223,16 @@ func NewBettingRound(bettingRound int) string {
 	}
 
 	// Wait for the expected number of community cards to be delt.
-	for numExCC != len(commCards) {
-		fmt.Println("Num CC:", numExCC, len(commCards))
-		commCards, _ = CommunityCards(img)
-		getImage()
-		time.Sleep(time.Millisecond * 100)
-	}
+	waitImage(func() bool {
+		commCards, _ = vision.CommunityCards(img)
+		if numExCC == len(commCards) {
+			return true
+		}
+		return false
+	}, 500, "waitForCommCards")
 
 	// Parse pot size.
-	pot, err := Pot(img)
+	pot, err := vision.Pot(img)
 	if err != nil {
 
 		// TODO: comment out
@@ -270,19 +264,18 @@ func NewPlayerAction(pos poker.PlayerPosition) string {
 
 	fmt.Print("Player ", pos, ": ")
 
-	getImage()
+	var curr poker.PlayerPosition
 
-	// Wait for player to loose his turn.
-	curr := CurrentPlayer(img)
-
-	for curr == pos {
-		getImage()
-		time.Sleep(time.Millisecond * 100)
-		curr = CurrentPlayer(img)
-	}
+	waitImage(func() bool {
+		curr = vision.CurrentPlayer(img)
+		if curr != pos {
+			return true
+		}
+		return false
+	}, 500, "waitForAction")
 
 	// Get player's action.
-	a, err := PlayerAction(img, pos)
+	a, err := vision.PlayerAction(img, pos)
 	if err != nil {
 		// TODO: uncomment
 		//log.Printf("error: Failed to get player action. %v", err)
@@ -290,10 +283,9 @@ func NewPlayerAction(pos poker.PlayerPosition) string {
 	}
 
 	// Get the players stack size.
-	newStack, err := PlayerStack(img, pos)
+	newStack, err := vision.PlayerStack(img, pos)
 	if err != nil {
 		fmt.Printf("error: Failed to parse player stack. %v", err)
-		PanicImage(nil)
 	}
 	// Calculate amount that was called/betted/raised.
 	amount := playerStacks[pos-1] - newStack
@@ -343,119 +335,10 @@ func NewPlayerAction(pos poker.PlayerPosition) string {
 
 	// Insert into last round.
 	currRound := len(h.Rounds)
-	if currRound == 0 {
-		PanicImage("curround == 0")
-	}
 	h.Rounds[currRound-1].Actions = append(h.Rounds[currRound-1].Actions, action)
 
 	// Return JSON encoded hand.
 	return returnHand()
-}
-
-// client returns the name of the client.
-func client() string {
-	return "PokerStars"
-}
-
-// table returns the details of the table.
-func table() poker.Table {
-
-	var table poker.Table
-
-	// Get window name.
-	name, err := window.Get().Name()
-	if err != nil {
-		log.Printf("warning: Failed to get window name. %v", err)
-	}
-
-	strs := strings.Split(name, " - ")
-	if len(strs) < 3 {
-		log.Printf("error: Expected three or more substrings in window name. "+
-			"name=%v", name)
-		return table
-	}
-
-	table.Name = strs[0]
-	table.Stakes, err = poker.ParseStakes(strs[1])
-	if err != nil {
-		log.Printf("error: Failed to parse table stakes. %v", err)
-	}
-	// TODO: allow other table sizes.
-	table.Size = 6
-	table.Game, err = poker.ParseGame(strs[2])
-	if err != nil {
-		log.Printf("error: Failed to parse game. %v", err)
-	}
-
-	return table
-}
-
-// handID returns current hand ID.
-func handID() int {
-	ret := handid
-	handid++
-	return ret
-}
-
-// date returns the time the hand was started.
-func date() poker.Date {
-	return poker.Date(time.Now())
-}
-
-// button returns the current button position.
-func button() poker.PlayerPosition {
-	return ButtonPosition(img)
-}
-
-// smallBlind returns the small blind position.
-func smallBlind() poker.PlayerPosition {
-
-	return nextActivePlayer(h.Button)
-}
-
-// bigBlind returns the big blind position.
-func bigBlind() poker.PlayerPosition {
-
-	return nextActivePlayer(h.SmallBlind)
-}
-
-func thisPlayer() *poker.PlayerCards {
-
-	cards, err := PocketCards(img)
-	if err != nil {
-		log.Printf("error: Failed to get pocket cards. %v", err)
-		return nil
-	}
-
-	return &poker.PlayerCards{4, cards}
-}
-
-func players() []poker.Player {
-
-	sync := make(chan bool, 6)
-
-	players := make([]poker.Player, 6)
-	for i := 0; i < 6; i++ {
-		index := i
-		go func() {
-			name, _ := PlayerName(img, poker.PlayerPosition(index+1))
-			stack, err := PlayerStack(img, poker.PlayerPosition(index+1))
-			if err != nil {
-				PanicImage(err)
-			}
-			fmt.Println(name, stack)
-
-			players[index] = poker.Player{Name: name, Stack: stack}
-			playerStacks[index] = stack
-			sync <- true
-		}()
-	}
-
-	for i := 0; i < 6; i++ {
-		<-sync
-	}
-
-	return players
 }
 
 // waitForNewHand waits for a new hand.
@@ -464,47 +347,31 @@ func waitForNewHand() {
 	numActive := 0
 	lowestNum := 6
 
-	for {
-		// Grab image from window.
-		getImage()
+	waitImage(func() bool {
 
 		// Has number of active players decreased?
-		numActive = len(ActivePlayers(img))
-		fmt.Println("Active:", numActive)
+		numActive = len(vision.ActivePlayers(img))
 		if numActive < lowestNum {
 			lowestNum = numActive
+			history.Save("newLow")
 
 			// Has number of active players increased?
 		} else if numActive > lowestNum {
 
 			// This is a new hand.
 
+			// Wait for table to be cleared.
 			// Wait for all players to become active.
 			// This does not happen at the exact same time.
-			time.Sleep(time.Millisecond * 500)
-
-			// Store active players.
-			getImage()
-			activePlayers = ActivePlayers(img)
-
-			// Wait for table to be cleared.
-			time.Sleep(time.Millisecond * 1000)
-			getImage()
-			return
+			time.Sleep(time.Millisecond * 1500)
+			getImage("waitForTableClear_playersActive")
+			activePlayers = vision.ActivePlayers(img)
+			return true
 		}
 
-		time.Sleep(time.Millisecond * 500)
-	}
-}
+		return false
 
-func getImage() {
-	var err error
-	img, err = window.Get().Image()
-	if err != nil {
-		panic("Could not get image from window")
-	}
-
-	//window.DebugImage(VisualizeSource(img, []string{"plAction0", "plAction1", "plAction2", "plAction3", "plAction4", "plAction5"}), "vision")
+	}, 500, "waitForNewHand")
 }
 
 func nextActivePlayer(pos poker.PlayerPosition) poker.PlayerPosition {
@@ -520,4 +387,23 @@ func nextActivePlayer(pos poker.PlayerPosition) poker.PlayerPosition {
 	}
 
 	return 0
+}
+
+// Get a new image
+func getImage(descr string) {
+	img = imgSrc.Get()
+	history.Save(descr)
+}
+
+// Get a new image until condition is met
+func waitImage(f func() bool, interval int, descr string) {
+	if img == nil {
+		getImage(descr)
+	}
+
+	for !f() {
+		time.Sleep(time.Millisecond * time.Duration(interval))
+		img = imgSrc.Get()
+	}
+	history.Save(descr)
 }

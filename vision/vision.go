@@ -1,10 +1,8 @@
-package main
+package vision
 
 import (
-	"bytes"
 	"fmt"
 	"image"
-	"io"
 	"log"
 	"strconv"
 	"strings"
@@ -15,28 +13,39 @@ import (
 	"github.com/whomever000/poker-vision"
 )
 
+var img image.Image
+
+func SetImage(i image.Image) {
+	img = i
+}
+func Image() image.Image {
+	return img
+}
+
+type ImageSource interface {
+	Get() image.Image
+}
+
+type DefaultImageSource struct {
+}
+
+func NewDefaultImageSource() ImageSource {
+	return &DefaultImageSource{}
+}
+func (dis *DefaultImageSource) Get() image.Image {
+	var err error
+	img, err = window.Get().Image()
+	if err != nil {
+		panic("Could not get image from window")
+	}
+	return img
+}
+
 func VisualizeSource(img image.Image, srcs []string) image.Image {
 	return m.VisualizeSource(img, srcs)
 }
 
 var m pokervision.Matcher
-
-type fileLoader struct{}
-
-func (l *fileLoader) Load(fileName string) io.Reader {
-
-	if strings.HasPrefix(fileName, "./") {
-		fileName = fileName[2:]
-	}
-
-	data, err := Asset(fileName)
-	if err != nil {
-		log.Printf("error: Failed to load file %v", fileName)
-		return nil
-	}
-
-	return bytes.NewReader(data)
-}
 
 // LoadReferences loads the reference file.
 func LoadReferences() error {
