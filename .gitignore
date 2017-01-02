@@ -13,6 +13,7 @@ poker-client-pokerstars
 _obj
 _test
 debug_img
+dump
 
 # Architecture specific extensions/prefixes
 *.[568vq]
