@@ -1,23 +1,23 @@
 {
 	"Srcs":[{
 			"Name":"commColor0",
-			"Src":[211,160,11,11],
+			"Src":[270,201,13,13],
 			"Refs":["spades","hearts","clubs","diamonds"]
 		},{
 			"Name":"commColor1",
-			"Src":[256,160,11,11],
+			"Src":[324,201,13,13],
 			"Refs":["spades","hearts","clubs","diamonds"]
 		},{
 			"Name":"commColor2",
-			"Src":[301,160,11,11],
+			"Src":[378,201,13,13],
 			"Refs":["spades","hearts","clubs","diamonds"]
 		},{
 			"Name":"commColor3",
-			"Src":[346,160,11,11],
+			"Src":[432,201,13,13],
 			"Refs":["spades","hearts","clubs","diamonds"]
 		},{
 			"Name":"commColor4",
-			"Src":[391,160,11,11],
+			"Src":[486,201,13,13],
 			"Refs":["spades","hearts","clubs","diamonds"]
 		},
 
@@ -68,27 +68,27 @@
 
 		{
 			"Name":"commValue0",
-			"Src":[212,147,9,12],
+			"Src":[271,186,10,13],
 			"Refs":["val2","val3","val4","val5","val6","val7","val8","val9",
 					"valT","valJ","valQ","valK","valA"]
 		},{
 			"Name":"commValue1",
-			"Src":[257,147,9,12],
+			"Src":[325,186,10,13],
 			"Refs":["val2","val3","val4","val5","val6","val7","val8","val9",
 					"valT","valJ","valQ","valK","valA"]
 		},{
 			"Name":"commValue2",
-			"Src":[302,147,9,12],
+			"Src":[379,186,10,13],
 			"Refs":["val2","val3","val4","val5","val6","val7","val8","val9",
 					"valT","valJ","valQ","valK","valA"]
 		},{
 			"Name":"commValue3",
-			"Src":[347,147,9,12],
+			"Src":[433,186,10,13],
 			"Refs":["val2","val3","val4","val5","val6","val7","val8","val9",
 					"valT","valJ","valQ","valK","valA"]
 		},{
 			"Name":"commValue4",
-			"Src":[392,147,9,12],
+			"Src":[487,186,10,13],
 			"Refs":["val2","val3","val4","val5","val6","val7","val8","val9",
 					"valT","valJ","valQ","valK","valA"]
 		},
@@ -316,22 +316,22 @@
 
 		{
 			"Name":"pocketColor0",
-			"Src":[282,289,11,11],
+			"Src":[494,51,13,13],
 			"Refs":["spades","hearts","clubs","diamonds"]
 		},{
 			"Name":"pocketColor1",
-			"Src":[322,289,11,11],
+			"Src":[509,56,13,13],
 			"Refs":["spades","hearts","clubs","diamonds"]
 		},
 
 		{
 			"Name":"pocketValue0",
-			"Src":[283,276,9,12],
+			"Src":[495,36,10,13],
 			"Refs":["val2","val3","val4","val5","val6","val7","val8","val9",
 					"valT","valJ","valQ","valK","valA"]
 		},{
 			"Name":"pocketValue1",
-			"Src":[323,276,9,12],
+			"Src":[510,40,10,13],
 			"Refs":["val2","val3","val4","val5","val6","val7","val8","val9",
 					"valT","valJ","valQ","valK","valA"]
 		}

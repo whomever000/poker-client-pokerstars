@@ -211,6 +211,7 @@ func CommunityCards(img image.Image) ([]card.Card, error) {
 			return nil, err
 		}
 
+		fmt.Println("CC:", c)
 		cards = append(cards, c)
 	}
 

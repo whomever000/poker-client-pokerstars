@@ -14,6 +14,8 @@ import (
 
 	"flag"
 
+	"os"
+
 	"github.com/whomever000/poker-client-pokerstars/history"
 	"github.com/whomever000/poker-client-pokerstars/vision"
 	"github.com/whomever000/poker-common"
@@ -26,6 +28,8 @@ var (
 	img    image.Image
 	h      *poker.Hand
 	imgSrc vision.ImageSource
+
+	usingHistory bool
 )
 
 func init() {
@@ -70,6 +74,7 @@ func Attach(windowName string) error {
 		log.Warnf("failed to get process name. %v", err)
 	}
 
+	log.Infof("PID: %v", os.Getpid())
 	log.Infof("attached to window '%v' of process '%v'", name, process)
 	return nil
 }
@@ -86,6 +91,7 @@ func main() {
 	hFlag := flag.Int("h", 0, "pid of history")
 	flag.Parse()
 	if *hFlag != 0 {
+		usingHistory = true
 		imgSrc = history.NewImageSource(*hFlag, true)
 	} else {
 		imgSrc = vision.NewDefaultImageSource()
@@ -94,8 +100,10 @@ func main() {
 	var currPlayer poker.PlayerPosition
 
 	// Attach to table window.
-	//Attach("Halley")
-	Attach("Play Money")
+	err := Attach("Halley")
+	if err != nil {
+		return
+	}
 
 	// Handle hands.
 	for {
@@ -187,10 +195,6 @@ func NewHand() string {
 	h.ThisPlayer = thisPlayer()
 	h.Players = players()
 
-	// Wait for cards to be delt.
-	time.Sleep(500 * time.Millisecond)
-	getImage("waitForCardsDealt")
-
 	// Return JSON encoded hand.
 	return returnHand()
 }
@@ -225,6 +229,7 @@ func NewBettingRound(bettingRound int) string {
 	// Wait for the expected number of community cards to be delt.
 	waitImage(func() bool {
 		commCards, _ = vision.CommunityCards(img)
+		log.Debug(commCards)
 		if numExCC == len(commCards) {
 			return true
 		}
@@ -324,7 +329,7 @@ func NewPlayerAction(pos poker.PlayerPosition) string {
 	default:
 		log.Printf("error: Invalid player action: %v", a)
 		// TODO: uncomment
-		panic("")
+		//panic("")
 	}
 
 	// Initialize PlayerAction object
@@ -363,8 +368,8 @@ func waitForNewHand() {
 			// Wait for table to be cleared.
 			// Wait for all players to become active.
 			// This does not happen at the exact same time.
-			time.Sleep(time.Millisecond * 1500)
-			getImage("waitForTableClear_playersActive")
+			sleep(4000)
+			getImage("waitForCardsDealt")
 			activePlayers = vision.ActivePlayers(img)
 			return true
 		}
@@ -402,8 +407,16 @@ func waitImage(f func() bool, interval int, descr string) {
 	}
 
 	for !f() {
-		time.Sleep(time.Millisecond * time.Duration(interval))
+		sleep(interval)
 		img = imgSrc.Get()
 	}
 	history.Save(descr)
+}
+
+func sleep(ms int) {
+	if usingHistory {
+		return
+	}
+
+	time.Sleep(time.Millisecond * time.Duration(ms))
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"io"
-	"poker/window"
 	"strings"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 
 	"github.com/whomever000/poker-client-pokerstars/vision"
 	poker "github.com/whomever000/poker-common"
+	"github.com/whomever000/poker-common/window"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -32,7 +32,6 @@ func table() poker.Table {
 	var table poker.Table
 
 	// Get window name.
-	log.Debugf("window %v", window.Get())
 	name, err := window.Get().Name()
 	if err != nil {
 		log.Warnf("failed to get window name. %v", err)
@@ -88,7 +87,7 @@ func bigBlind() poker.PlayerPosition {
 func thisPlayer() *poker.PlayerCards {
 	cards, err := vision.PocketCards(img)
 	if err != nil {
-		log.Printf("error: Failed to get pocket cards. %v", err)
+		//log.Printf("error: Failed to get pocket cards. %v", err)
 		return nil
 	}
 
@@ -112,7 +111,7 @@ func players() []poker.Player {
 			if err != nil {
 				panic(err)
 			}
-			log.Info(name, stack)
+			log.Infof("%v:\t%v", name, stack)
 
 			players[index] = poker.Player{Name: name, Stack: stack}
 			playerStacks[index] = stack
