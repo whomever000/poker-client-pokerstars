@@ -100,7 +100,7 @@ func main() {
 	var currPlayer poker.PlayerPosition
 
 	// Attach to table window.
-	err := Attach("Halley")
+	err := Attach("Play Money")
 	if err != nil {
 		return
 	}
@@ -111,6 +111,9 @@ func main() {
 		// Wait for new hand.
 		// Wait for pocket cards to be delt.
 		NewHand()
+
+		performFold()
+		continue
 
 		// Prepare for new hand.
 		currPlayer = nextActivePlayer(h.BigBlind)
@@ -419,4 +422,8 @@ func sleep(ms int) {
 	}
 
 	time.Sleep(time.Millisecond * time.Duration(ms))
+}
+
+func performFold() {
+	window.Get().PressKey("F1")
 }
